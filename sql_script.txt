@@ -1,0 +1,89 @@
+USE `primetickets`;
+
+CREATE TABLE osobe ( 
+id int unsigned auto_increment primary key, 
+ime varchar(50) not null, 
+prezime varchar(50) not null, 
+email varchar(100) not null unique, 
+lozinka varchar(255) not null, 
+telefon varchar(20) not null, 
+datum_registracije datetime default current_timestamp, 
+uloga enum('administrator', 'korisnik') default 'korisnik', 
+status enum('aktivan', 'deaktiviran') default 'aktivan' 
+); 
+
+CREATE TABLE adrese ( 
+id int unsigned auto_increment primary key, 
+grad varchar(100) not null, 
+ulica varchar(100) not null, 
+broj varchar(10) not null 
+); 
+
+CREATE TABLE sale ( 
+id int unsigned auto_increment primary key, 
+naziv varchar(100) not null, 
+idAdrese int unsigned not null, 
+foreign key(idAdrese) references adrese (id) 
+); 
+
+CREATE TABLE mesta ( 
+id int unsigned auto_increment primary key, 
+red int unsigned not null, 
+broj int unsigned not null, 
+idSale int unsigned not null, 
+foreign key(idSale) references sale (id), 
+unique(red,broj,idSale) 
+); 
+ 
+CREATE TABLE kategorije ( 
+id int unsigned auto_increment primary key, 
+naziv enum("Koncert","Pozorište","Sport","Festival","Muzej") not null); 
+
+CREATE TABLE vrste( 
+id int unsigned auto_increment primary key, 
+naziv varchar(50) not null, 
+idKategorije int unsigned not null, 
+foreign key(idKategorije) references kategorije(id)); 
+
+CREATE TABLE dogadjaji ( 
+id int unsigned auto_increment primary key, 
+naziv varchar(150) not null, 
+datum_vreme datetime not null, 
+organizator varchar(50) not null, 
+slika varchar(255) null, 
+opis text null, 
+cena decimal(10,2), 
+status enum('aktivan','otkazan') default 'aktivan', 
+idSale int unsigned not null, 
+idVrste int unsigned not null, 
+datum_unosa datetime default current_timestamp, 
+foreign key(idSale) references sale (id), 
+foreign key (idVrste) references vrste(id) 
+); 
+
+CREATE TABLE karte ( 
+id int unsigned auto_increment primary key, 
+cena decimal(10,2) unsigned not null, 
+idMesta int unsigned not null, 
+idDogadjaja int unsigned not null, 
+foreign key(idMesta) references mesta (id), 
+foreign key(idDogadjaja) references dogadjaji (id), 
+unique(idDogadjaja,idMesta)
+); 
+
+CREATE TABLE kupovine ( 
+id int unsigned auto_increment primary key, 
+datum_kupovine datetime default current_timestamp, 
+ukupnaCena decimal(10,2) unsigned not null, 
+idKorisnika int unsigned not null, 
+foreign key(idKorisnika) references osobe (id) 
+); 
+
+CREATE TABLE stavkeKupovine ( 
+id int unsigned auto_increment primary key, 
+idKupovine int unsigned not null, 
+idKarte int unsigned not null, 
+foreign key(idKupovine) references kupovine (id), 
+foreign key(idKarte) references karte (id), 
+unique(idKupovine,idKarte) 
+);  
